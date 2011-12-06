@@ -1,0 +1,188 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 命令
+%% \R{} R名称，暂未定义
+%% \rcode 正文中的R代码，等宽字体
+%% \pkg 包名称，粗体
+%% \fun 函数名称，斜体
+%% 大段的R代码请放在Verbatim环境中(注意是大写V不是v)
+
+\documentclass{article}
+\usepackage{ctexcap}
+\usepackage{natbib}
+\usepackage{array}
+\usepackage{amsmath,amsthm, amsfonts, amssymb, array}
+\usepackage{graphicx,booktabs,xcolor,url}
+\usepackage{hyperref}
+\usepackage{fancybox,fancyhdr, fancyvrb, geometry}
+\usepackage{subfigure, listings}
+\usepackage[toc,page]{appendix}
+\newcommand{\email}[1]{\href{mailto:#1}{\normalfont\texttt{#1}}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\rcode}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{\textbf{\textsf{#1}}}
+\newcommand{\fun}[1]{\textit{#1}}
+\newtheorem{exmp}{例~}
+\geometry{left=3cm,right=3cm,top=2.5cm,bottom=2.5cm}
+\graphicspath{{fig/}}
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{frame=leftline,numbers=left,rulecolor=\color{lightgray},framerule=4pt,numbersep=3pt}
+\fvset{frame=leftline,numbers=left,rulecolor=\color{lightgray},framerule=4pt,numbersep=3pt}
+
+
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\newcolumntype{C}[1]{>{\PreserveBackslash\centering}p{#1}}
+\newcolumntype{R}[1]{>{\PreserveBackslash\raggedleft}p{#1}}
+\newcolumntype{L}[1]{>{\PreserveBackslash\raggedright}p{#1}}
+\makeatletter
+\def\hlinewd#1{%
+  \noalign{\ifnum0=`}\fi\hrule \@height #1 \futurelet
+   \reserved@a\@xhline}
+\makeatother
+\setlength\arraycolsep{2pt}
+\setlength{\belowcaptionskip}{3pt plus 1pt minus 2pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\title{\heiti \R 软件在最优化中的应用}
+
+\author{魏太云 \thanks{
+	Email：weitaiyun@gmail.com；
+	Homepage：\url{taiyun.cos.name} }}
+\date{}
+\maketitle
+
+\begin{abstract}
+最优化是一类重要问题，在科学的各个领域中都被广泛应用，免费而又强大的开源软件 \R 可以方便地
+解决各类最优化问题，本文就线性规划、整数规划、目标规划、非线性规划、图与网络规划在 \R 中的求解
+方法进行了初步探究。
+通过研究，我们发现针对各类优化问题 (还包括较为特殊的运输问题、指派问题、旅行商问题、网络流问题等)，
+\R 都提供了专门的包和函数，利用它们可以简单而又完美地解决这些优化问题。同时，经过比较，我们
+发现 \R 在这些优化问题的处理上要比 LINGO 软件更有优势。
+
+\textbf{关键词:} R 软件；最优化；线性规划；整数规划；目标规划；非线性规划；图与网络规划；旅行商问题
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{引言}
+\R \citep{R08}是一个强大、灵活、开源、免费的优秀软件，它不仅能够便捷地处理各类统计问题，而且可以毫不逊色地解决
+数学规划、数据挖掘、地理信息、财政金融等诸多领域的各种问题。之所以如此，是因为
+ \R 汇集了由世界上数学界、统计学界、计算机界、经济学界、物理学界、化学界、心理学界、社会学界
+等各个领域的众多专家为其贡献的包，目前已经多达数千个，并且还在快速增长中。
+
+数学规划俗称最优化，是一类非常重要的问题，在工程、地质、数学、经济、管理中都有广泛的应用。
+\R 中有很多关于最优化问题的包\footnote{详情参见\url{http://cran.r-project.org/web/views
+/Optimization.html}，这是关于最优化包的一个总结，本文中所要用的包都可以在该网站上链接下载，
+该页面的一个粗糙中译版% (由本文作者翻译) 
+见\url{http://www.cos.name/bbs/read.php?tid=12135}。}，
+可以处理各类优化问题。本文就线性规划、整数规划、目标规划、非线性规划、图与网络规划等常见的规划问题在 \R 中的求解方法进行了初步探究，其中部分例题来自《运筹学教程》\citep{Op07}一书。
+本文没有涉及太多的数学理论，而是着重讨论优化问题在软件中的解法\footnote{本文讨论都是 \R 包中已经提供了的现成解法。当然，只要我们熟悉算法和 \R 语言，我们完全可以自己编程来解决问题。}。这并不是否认算法的重要性，而是因为它们可以在大多数关于运筹学以及最优化的教程中轻松找到。此外，本文比较了 \R 和专业优化软件 LINGO 在解决各类问题的效率，其中在 LINGO 中的求解方法主要来自《运筹学--应用范例与解法》\citep{OP06}一书。
+
+ \input{lpip}%%%线性规划整数规划
+ \input{gp}%%%目标规划
+ \input{nlp}%%%非线性规划
+ \input{graph}%%%图与网络分析
+ \section{结语}
+ 通过以上篇幅的讨论，可以初步领略 \R 在处理最优化问题时的强大之处，
+ 其语言之灵活、绘图之方便、涉及问题之全面，远胜于专门处理优化问题的 LINDO/LINGO 软件。
+ 工欲善其事，必先利其器，在最优化问题上，\R 绝对是一把倚天宝剑，而更令人惊讶而又惊喜的是，
+ 这把宝剑竟然是免费的！既然 \R 如此的价廉物美，那么在知识产权倍受重视的今天，
+ 我们又何必舍其粱肉，窃其糠糟呢？
+ 
+ 
+ \R 中关于最优化的内容很多，本文涉及的仅是九牛一毛而已。作者殷切希望本文能够抛砖引玉，促进 \R 和最优化在国内的发展。
+
+\section*{致谢}
+首先感谢 \R 软件及各类包的所有作者，正因为他 (她) 们的无私奉献，才使得我们拥有 \R 这个卓越的软件。其次，我要感谢COS 论坛，是她让我认识了 \R 并提供了学习 \R 的便利。在本文的写作中，中国人民大学的谢益辉博士和南京大学的刘重杰老师
+给了我莫大的鼓励和帮助，在此向他们致以崇高的敬意和由衷的感谢。
+最后，我还要感谢我们寝室的所有兄弟，他们在生活上、学习上都给了我很大的帮助。
+
+
+\begin{thebibliography}{20}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{胡运权(2007)}]{Op07}
+胡运权 (2007).
+\newblock \emph{运筹学教程}.
+\newblock 清华大学出版社, 第三版 edition.
+\newblock ISBN 978-7-302-14738-1.
+
+\bibitem[{Berkelaar \emph{et~al.}(2008)}]{lpSolve08}
+Berkelaar M, \emph{et~al.} (2008).
+\newblock \emph{lpSolve: Interface to Lp\_solve v.5.5 to solve linear/integer
+  programs}.
+\newblock R package version 5.6.4.
+
+\bibitem[{Csardi and Nepusz(2006)}]{igraph06}
+Csardi G, Nepusz T (2006).
+\newblock \enquote{The igraph software package for complex network research.}
+\newblock \emph{InterJournal}, \textbf{Complex Systems}, 1695.
+\newblock \urlprefix\url{http://igraph.sf.net}.
+
+\bibitem[{Hahsler and Hornik(2008)}]{TSP08}
+Hahsler M, Hornik K (2008).
+\newblock \emph{TSP: Traveling Salesperson Problem (TSP)}.
+\newblock R package version 0.2-4,
+  \urlprefix\url{http://r-forge.r-project.org/projects/tsp/}.
+
+\bibitem[{Lewin-Koh \emph{et~al.}(2008)Lewin-Koh, Bivand, contributions~by
+  Edzer J.~Pebesma, Archer, Dray, Forrest, Giraudoux, Golicher, Rubio,
+  Hausmann, Jagger, Luque, MacQueen, Niccolai, and Short}]{maptools08}
+Lewin-Koh NJ, Bivand R, contributions~by Edzer J~Pebesma, Archer E, Dray S,
+  Forrest D, Giraudoux P, Golicher D, Rubio VG, Hausmann P, Jagger T, Luque SP,
+  MacQueen D, Niccolai A, Short T (2008).
+\newblock \emph{maptools: Tools for reading and handling spatial objects}.
+\newblock R package version 0.7-15.
+
+\bibitem[{Minka(2008)}]{maps08}
+Minka TP (2008).
+\newblock \emph{maps: Draw Geographical Maps}.
+\newblock R package version 2.0-40.
+
+\bibitem[{Novomestky(2008)}]{goalprog08}
+Novomestky F (2008).
+\newblock \emph{goalprog: Weighted and lexicographical goal programming and
+  optimization}.
+\newblock R package version 1.0-2.
+
+\bibitem[{{R Development Core Team}(2008)}]{R08}
+{R Development Core Team} (2008).
+\newblock \emph{R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria.
+\newblock {ISBN} 3-900051-07-0, \urlprefix\url{http://www.R-project.org}.
+
+\bibitem[{Tamura(2007)}]{Rdonlp207}
+Tamura R (2007).
+\newblock \emph{Rdonlp2: an R extension library to use Peter Spelluci's DONLP2
+  from R.}
+\newblock R package version 0.3-1, \urlprefix\url{http://arumat.net/Rdonlp2/}.
+
+\bibitem[{Tendys(2002)}]{gafit02}
+Tendys T (2002).
+\newblock \emph{gafit: Genetic Algorithm for Curve Fitting}.
+\newblock R package version 0.4,
+  \urlprefix\url{http://www.progsoc.uts.edu.au/~telford/}.
+
+\bibitem[{Theussl and Hornik(2008)}]{Rglpk08}
+Theussl S, Hornik K (2008).
+\newblock \emph{Rglpk: R/GNU Linear Programming Kit Interface}.
+\newblock R package version 0.2-5,
+  \urlprefix\url{http://R-Forge.R-project.org/projects/rglp/,
+  http://www.gnu.org/software/glpk/}.
+
+\bibitem[{Winston(2007)}]{OP06}
+Winston WL (2007).
+\newblock \emph{运筹学--应用范例与解法}.
+\newblock 清华大学出版社, 第四版 edition.
+\newblock ISBN 7-302-13208-9/TP·8347.
+
+\end{thebibliography}
+
+
+\end{document}

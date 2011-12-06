@@ -1,0 +1,84 @@
+\begin{thebibliography}{20}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem[{胡运权(2007)}]{Op07}
+胡运权 (2007).
+\newblock \emph{运筹学教程}.
+\newblock 清华大学出版社, 第三版 edition.
+\newblock ISBN 978-7-302-14738-1.
+
+\bibitem[{Berkelaar \emph{et~al.}(2008)}]{lpSolve08}
+Berkelaar M, \emph{et~al.} (2008).
+\newblock \emph{lpSolve: Interface to Lp\_solve v.5.5 to solve linear/integer
+  programs}.
+\newblock R package version 5.6.4.
+
+\bibitem[{Csardi and Nepusz(2006)}]{igraph06}
+Csardi G, Nepusz T (2006).
+\newblock \enquote{The igraph software package for complex network research.}
+\newblock \emph{InterJournal}, \textbf{Complex Systems}, 1695.
+\newblock \urlprefix\url{http://igraph.sf.net}.
+
+\bibitem[{Hahsler and Hornik(2008)}]{TSP08}
+Hahsler M, Hornik K (2008).
+\newblock \emph{TSP: Traveling Salesperson Problem (TSP)}.
+\newblock R package version 0.2-4,
+  \urlprefix\url{http://r-forge.r-project.org/projects/tsp/}.
+
+\bibitem[{Lewin-Koh \emph{et~al.}(2008)Lewin-Koh, Bivand, contributions~by
+  Edzer J.~Pebesma, Archer, Dray, Forrest, Giraudoux, Golicher, Rubio,
+  Hausmann, Jagger, Luque, MacQueen, Niccolai, and Short}]{maptools08}
+Lewin-Koh NJ, Bivand R, contributions~by Edzer J~Pebesma, Archer E, Dray S,
+  Forrest D, Giraudoux P, Golicher D, Rubio VG, Hausmann P, Jagger T, Luque SP,
+  MacQueen D, Niccolai A, Short T (2008).
+\newblock \emph{maptools: Tools for reading and handling spatial objects}.
+\newblock R package version 0.7-15.
+
+\bibitem[{Minka(2008)}]{maps08}
+Minka TP (2008).
+\newblock \emph{maps: Draw Geographical Maps}.
+\newblock R package version 2.0-40.
+
+\bibitem[{Novomestky(2008)}]{goalprog08}
+Novomestky F (2008).
+\newblock \emph{goalprog: Weighted and lexicographical goal programming and
+  optimization}.
+\newblock R package version 1.0-2.
+
+\bibitem[{{R Development Core Team}(2008)}]{R08}
+{R Development Core Team} (2008).
+\newblock \emph{R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria.
+\newblock {ISBN} 3-900051-07-0, \urlprefix\url{http://www.R-project.org}.
+
+\bibitem[{Tamura(2007)}]{Rdonlp207}
+Tamura R (2007).
+\newblock \emph{Rdonlp2: an R extension library to use Peter Spelluci's DONLP2
+  from R.}
+\newblock R package version 0.3-1, \urlprefix\url{http://arumat.net/Rdonlp2/}.
+
+\bibitem[{Tendys(2002)}]{gafit02}
+Tendys T (2002).
+\newblock \emph{gafit: Genetic Algorithm for Curve Fitting}.
+\newblock R package version 0.4,
+  \urlprefix\url{http://www.progsoc.uts.edu.au/~telford/}.
+
+\bibitem[{Theussl and Hornik(2008)}]{Rglpk08}
+Theussl S, Hornik K (2008).
+\newblock \emph{Rglpk: R/GNU Linear Programming Kit Interface}.
+\newblock R package version 0.2-5,
+  \urlprefix\url{http://R-Forge.R-project.org/projects/rglp/,
+  http://www.gnu.org/software/glpk/}.
+
+\bibitem[{Winston(2007)}]{OP06}
+Winston WL (2007).
+\newblock \emph{运筹学--应用范例与解法}.
+\newblock 清华大学出版社, 第四版 edition.
+\newblock ISBN 7-302-13208-9/TP·8347.
+
+\end{thebibliography}

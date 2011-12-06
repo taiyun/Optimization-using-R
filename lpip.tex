@@ -1,0 +1,327 @@
+ \section{线性规划和整数规划}
+ \subsection{用 \pkg{Rglpk} 包求解线性规划和整数规划}
+ 线性规划 (linear programming) 和整数规划\footnote{这里讨论的主要是整数线性规划，其松弛问题为线性规划。}
+  (integer programming) 的主要区别是决策变量的约束不同，其中线性规划的变量为正实数，而纯整数规划的变量为正整数。
+ 如果决策变量中一部分为整数，另一部分可以不取整数，则该问题为混合整数规划 (mixed integer linear programming)。
+ 线性规划和整数规划都可以视为混合整数规划的特例，用矩阵和向量表示混合整数规划的数学模型如下：
+  \begin{equation}\label{eq:lpip}
+\begin{array}{l}
+ \min(\text{或}\max) \ z=\mathbf{Cx}  \\
+ \text{s.t.}\left\{ \begin{array}{l}
+   \mathbf{Ax}\leqslant (\text{或}\geqslant, \text{或}=) \mathbf{b}\\
+   \mathbf{x}\geqslant \mathbf{0}\\
+   \mathbf{l} \leqslant \mathbf{X} \leqslant \mathbf{u}\\
+   \mathbf{x}\ \text{中的元素取整数、 0 - 1 整数或实数}
+ \end{array} \right.
+ \end{array}
+\end{equation}
+
+\R 中，有很多包可以解决该问题，推荐 \pkg{Rglpk} 包\citep{Rglpk08}，该包提供了到 GLPK (GNU Linear Programming Kit) 
+的高级接口，不仅可以方便快速地解决大型的线性规划、整数规划、混合整数规划，并且用法非常简单。
+核心函数为 \fun{Rglpk\_solve\_LP()}，用法如下：
+
+\begin{verbatim}
+Rglpk_solve_LP(obj, mat, dir, rhs, types = NULL, max = FALSE,
+               bounds = NULL, verbose = FALSE)
+\end{verbatim}
+
+其中，\rcode{obj} 为目标函数的系数，即模型 (\ref{eq:lpip}) 中的向量 $\mathbf{C}$，
+\rcode{mat} 为约束矩阵，即模型 (\ref{eq:lpip}) 中的矩阵 $\mathbf{A}$，
+\rcode{dir} 为约束矩阵 $\mathbf{A}$ 右边的符号
+ (取\verb|"<"|、\verb|"<="|、\verb|"=="|、\verb|">"| 或 \verb|">="|)，
+\rcode{rhs} 为约束向量，即模型 (\ref{eq:lpip}) 中的向量 $\mathbf{b}$，
+\rcode{types} 为变量类型，可选''B''、''I''或''C''，分别代表 0 - 1 整数变量，正整数和正实数，默认为正整数。
+\rcode{max} 为逻辑参数，当其为 \rcode{TRUE} 时，求目标函数的最大值，为 \rcode{FALSE} 时 (默认)，求目标函数的最小值。
+\rcode{bounds} 为 \emph{x} 的额外约束，由模型 (\ref{eq:lpip}) 中向量 $\mathbf{l}$ 和 $\mathbf{u}$ 控制。
+\rcode{verbose} 为是否输出中间过程的控制参数，默认为 \rcode{FALSE}。
+下面通过两个例子来说明该函数的用法。
+\begin{exmp}\label{ex:lpip001}
+求下列简单线性规划问题。
+\end{exmp}
+\begin{equation*}
+\begin{array}{l}
+\max \ z=2 x_1 + 4 x_2 + 3 x_3\\
+s.t.\left\{\begin{array}{rrrrrrr}
+3x_1 &+ &4 x_2 &+ &2 x_3& \leqslant &60\\
+2x_1 &+ &  x_2 &+ &  x_3& \leqslant &40\\
+ x_1 &+ &3 x_2 &+ &2 x_3& \leqslant &80\\
+\multicolumn{7}{l}{x_1,\  x_2, \ x_3 \geqslant 0}
+\end{array}\right.
+\end{array}
+\end{equation*}
+
+\noindent{{\textbf  解：}这是简单的线性规划问题，变量的类型没有特殊要求，即正实数。\R 代码及运行结果如下:}
+\begin{Verbatim}
+> library(Rglpk)
+> obj <- c(2, 4, 3)
+> mat <- matrix(c(3, 2, 1, 4, 1, 3, 2, 2, 2), nrow = 3)
+> dir <- c("<=", "<=", "<=")
+> rhs <- c(60, 40, 80)
+> Rglpk_solve_LP(obj, mat, dir, rhs, max = TRUE)
+$optimum
+[1] 76.66667
+
+$solution
+[1]  0.000000  6.666667 16.666667
+
+$status
+[1] 0
+\end{Verbatim}
+
+输出结果中，\verb|$optimum| 为目标函数的最大值，\verb|$solution| 表示决策变量的最优解，
+\verb|$status| 为 \rcode{0} 时，表示最优解寻找成功，非 \rcode{0} 时失败。本题中，\verb|$status| 为 \rcode{0}，表示
+最优解已经找到。$x_1$，$x_2$，$x_3$ 的最优解分别为 0，6.666667，16.666667，
+此时目标函数取得最大值 76.66667。
+\begin{exmp}\label{ex:lpip001}
+求下列混合整数规划规划问题。
+\end{exmp}
+\begin{equation*}
+\begin{array}{l}
+\max \ z=3 x_1 +  x_2 + 3 x_3\\
+s.t.\left\{\begin{array}{rrrrrrr}
+-x_1& + & 2x_2 &+&   x_3 &\leqslant &4\\
+    &   & 4x_2 &-& 3 x_3 &\leqslant &2 \\
+ x_1& - & 3x_2 &+& 2 x_3 &\leqslant &3\\
+\multicolumn{7}{l}{x_1,\ x_3 \ \text{为正整数}}
+\end{array}\right.
+\end{array}
+\end{equation*}
+
+\noindent{{\textbf  解：}这是混合整数规划问题，$x_1$，$x_3$ 为正整数，而 $x_2$ 为正实数。\R 代码及运行结果如下:}
+\begin{Verbatim}
+> library(Rglpk)
+> obj <- c(3, 1, 3)
+> mat <- matrix(c(-1, 0, 1, 2, 4, -3, 1, -3, 2), nrow = 3)
+> dir <- rep("<=", 3)
+> rhs <- c(4, 2, 3)
+> types <- c("I", "C", "I")        ##变量类型
+> Rglpk_solve_LP(obj, mat, dir, rhs, types, max = TRUE)
+$optimum
+[1] 26.75
+
+$solution
+[1] 5.00 2.75 3.00
+
+$status
+[1] 0
+\end{Verbatim}
+
+从输出结果可以知道，最优解已经找到 (\verb|$status| 为 \rcode{0})，$x_1$，$x_2$，$x_3$ 的最优解
+为 5，2.75，3，此时目标函数取得最大值 26.75。
+
+
+若变量还有定义域约束，通过设置参数 \rcode{bounds} 即可，这里不再赘述。
+
+
+通过这两个例子，我们发现 \R 在解决线性规划、整数规划、混合整数规划问题时，仅仅需要将模型转换为求解函数
+所需要的格式即可，并且几乎所有的约束都直接用矩阵、向量来表示，不必像 LINGO 那样需要键入 X1、X2 之类的字
+符\footnote{LINGO 也可以建立向量、矩阵等数据集，但其效率不能和 \R 相提并论，因为 \R 本身就是基于数组的。}
+，当问题规模较大时，这优势显得格外突出。
+ \subsection{专题： \pkg{lpSolve} 包和运输问题}
+ 运输问题 (transportation problem) 属于线性规划问题，可以根据模型按照线性规划的方式求解，但由于其特殊性，
+ 用常规的线性规划来求解并不是最有效的方法。
+ \pkg{lpSolve}包\citep{lpSolve08}
+ 提供了函数 \fun{lp.transport()} 来求解运输问题，用法如下：
+
+ \begin{verbatim}
+lp.transport(cost.mat, direction="min", row.signs, row.rhs, col.signs,
+             col.rhs, presolve=0, compute.sens=0, integers = 1:(nc*nr))
+\end{verbatim}
+其中:
+
+
+\rcode{cost.mat} 为费用矩阵，\rcode{direction} 决定求最大值还是最小值 (取 \rcode{"min"}或 \rcode{"max"})。
+
+
+\rcode{row.signs}(产量约束符号，
+取\verb|"<"|、\verb|"<="|、\verb|"="|、\verb|"=="|、\verb|">"| 或 \verb|">="|)和 \rcode{row.rhs}(产量约束数值) 
+构成产量约束条件。
+
+
+\rcode{col.signs}(销量约束符号，取\verb|"<"|、\verb|"<="|、\verb|"="|、\verb|"=="|、\verb|">"| 或 \verb|">="|)
+和 \rcode{col.rhs}(销量约束数值) 构成销量约束条件。
+
+
+\rcode{compute.sens} 为逻辑变量，决定是否进行灵敏度分析
+ (默认为 0，即不进行灵敏度分析)。
+
+
+下面通过两个例子来说明该函数的用法。
+ \begin{exmp}\label{ex:trans001}
+ 有三个造纸厂$A_1$、$A_2$ 和 $A_3$，造纸量分别为 16 个单位、10 个单位和 22 个单位，四个客户
+  $B_1$、$B_2$、$B_3$ 和 $B_4$ 的需求量分别为 8 个单位、14 个单位、12 个单位和 14 个单位。造
+ 纸厂到客户之间的单位运价如表 \ref{tab:trans001} 所示，确定总运费最少的调运方案。
+  \begin{table}[ht]
+   \caption{运费、产量及销量表}\label{tab:trans001}
+   \centering
+\begin{tabular}[h]{C{1.2cm}|C{1.2cm}C{1.2cm}C{1.2cm}C{1.2cm}|C{1.2cm}}
+\hlinewd{1pt}
+              &      $B_1$ &      $B_2$ &      $B_3$ &      $B_4$ &      产量 \\
+\hline
+        $A_1$ &          4 &          12 &        4 &         11 &         16 \\
+%\hline
+        $A_2$ &          2 &         10 &         3 &         9 &          10 \\
+%\hline
+        $A_3$ &          8 &          5 &         11&          6 &          22 \\
+\hline
+        销量 &          8 &          14 &         12&          14 &         48 \\
+\hlinewd{1pt}
+\end{tabular}
+ \end{table}
+ \end{exmp}
+
+\noindent{{\textbf  解：}总产量等于总销量，都为 48 个单位，这是一个产销平衡的运输问题。\R 代码及运行结果如下:}
+ \begin{Verbatim}
+> library(lpSolve)
+> costs <- matrix(c(4,2,8,12,10,5,4,3,11,11,9,6),nrow=3) #运费矩阵
+> row.signs <- rep("=", 3)   #各家造纸厂的产量恰好可以售完，故都取等号
+> row.rhs <- c(16,10,22)     #销量约束值
+> col.signs <- rep("=", 4)   #各家客户需求量恰好可以满足，故都取等号
+> col.rhs <- c(8,14,12,14)   #需求约束值
+> res <- lp.transport(costs,"min",row.signs,row.rhs,col.signs,col.rhs)
+> res                        #输出最小运费
+Success: the objective function is 244
+> res$solution               #输出运输方案
+     [,1] [,2] [,3] [,4]
+[1,]    4    0   12    0
+[2,]    4    0    0    6
+[3,]    0   14    0    8
+\end{Verbatim}
+
+ 第 9 行输出结果表示问题成功解决，最少运费为 244，第 11 -- 14 行为输出的运输矩阵，运送方案为:
+  $A_1\rightarrow B_1$ : 4 个单位，$A_1\rightarrow B_3$ : 12 个单位，$A_2\rightarrow B_1$ : 4 个单位，
+  $A_2\rightarrow B_4$ : 6 个单位，$A_3\rightarrow B_2$ : 14 个单位，$A_3\rightarrow B_4$ : 8 个单位。
+
+
+ 下面再看一个产销不平衡的运输问题。
+%%%%-----------------------------------------------------------------------------
+ \begin{exmp}\label{ex:trans002}
+ 有三个造纸厂 $A_1$、$A_2$ 和 $A_3$ ，造纸量分别为 8 个单位、5 个单位和 9 个单位，四个客户
+  $B_1$、$B_2$、$B_3$ 和 $B_4$ 的需求量分别为 4 个单位、3 个单位、5 个单位和 6 个单位。造纸
+ 厂到客户之间的单位运价如表 \ref{tab:trans002} 所示，确定总运费最少的调运方案。
+  \begin{table}[ht]
+   \caption{运费、产量及销量表}\label{tab:trans002}
+   \centering
+\begin{tabular}[h]{C{1.2cm}|C{1.2cm}C{1.2cm}C{1.2cm}C{1.2cm}|C{1.2cm}}
+\hlinewd{1pt}
+              &      $B_1$ &      $B_2$ &      $B_3$ &      $B_4$ &      产量 \\
+\hline
+        $A_1$ &          3 &          12 &        3 &         4 &         8 \\
+%\hline
+        $A_2$ &          11 &         2 &         5 &         9 &         5 \\
+%\hline
+        $A_3$ &          6 &          7 &         1&          5 &         9 \\
+\hline
+        销量 &          4 &          3 &         5 &          6 &          \\
+\hlinewd{1pt}
+\end{tabular}
+%\end{center}
+\end{table}
+\end{exmp}
+\noindent{{\textbf  解：} 总产量为 $8+5+9=22$ 个单位，而总销量为 $4+3+5+6=18$ 个单位，总产量大于总销量，故这是
+ 一个产销不平衡的运输问题。这和上一题的主要区别是产量约束符号不再都为等号，而是根据实际情况取相应的符号。
+ \R 代码及运行结果如下:}
+ \begin{Verbatim}
+> costs <- matrix (c(3,11,6,12,2,7,3,5,1,4,9,5),nrow=3); ##运费矩阵
+> row.signs <- rep ("<=", 3)   #总产量大于总销量，故各家销量小于等于产量
+> row.rhs <- c(8,5,9)          #销量约束值
+> col.signs <- rep ("=", 4)    #各家客户需求量都可以满足，故都取等号
+> col.rhs <- c(4,3,5,6)        #需求约束值
+> res <- lp.transport(costs,"min",row.signs,row.rhs,col.signs,col.rhs)
+> res                          #输出最小运费
+Success: the objective function is 49
+> res$solution                 #输出运输方案
+     [,1] [,2] [,3] [,4]
+[1,]    4    0    0    4
+[2,]    0    3    0    0
+[3,]    0    0    5    2
+ \end{Verbatim}
+
+ 从运行结果可以看出，问题成功解决，最少运费为 49，运输方案为:
+  $A_1 \rightarrow 
+ B_1$ : 4 个单位，$A_1\rightarrow
+ B_4$ : 4 个单位，$A_2\rightarrow
+ B_2$ : 3 个单位，$A_3\rightarrow
+ B_3$ : 5 个单位，$A_3\rightarrow
+ B_4$ : 2 个单位。
+
+
+对于其它产销不平衡问题，根据具体情况 (如果有必要的的话，则进行适当的变换)，
+调用函数 \fun{lp.transport()} 来求解。
+
+
+LINGO 在求解运输问题时，要通过各种命令建立数据集、模型、目标函数、约束函数等，比较
+繁琐%\footnote{详见由 Wayne L. Winston 所著的《运筹学--应用范例与解法》第 413 页，第四版，清华大学出版。}
+，相比之下，\R 的代码显得简洁而又直观。
+\subsection{专题： \pkg{lpSolve} 包和指派问题}
+ 指派问题 (assignment problem) 属于 0 - 1 整数规划，是一种特殊的整数规划问题。指派问题的标准形式 (以人和事为例) 是：
+ 有 n 个人和 n 个事，已知第 i 个人做第 j 件事的费用为 $c_{ij}\ (i,j=1,2,\cdots,n)$，要求确定人和事之间
+ 的一一对应的指派方案，使完成 n 件事的总费用最少。
+
+
+ \R 中， \pkg{lpSolve} 包
+ 提供了函数 \fun{lp.assign()} 来求解标准指派问题，
+ 其用法如下：
+
+\begin{verbatim}
+lp.assign (cost.mat,direction = "min", presolve = 0, compute.sens = 0)
+\end{verbatim}
+
+ 其中，\rcode{cost.mat} 为指派问题的系数矩阵，其元素的意义根据实际情况而定，可以是费用、时间、
+ 成本等。\rcode{direction} 为逻辑变量，来决定求总费用的最大值还是最小值，默认求总
+ 费用的最小值。\rcode{compute.sens} 决定是否进行灵敏度分析。
+ \begin{exmp}\label{ex:ap}
+ 某商业公司计划开办 5 家新商店。为了尽早建成营业，商业公司决定由 5 家建筑公司分别承建。已知建筑公司
+  $A_i(i=1,2,\cdots,5)$ 对新商店 $B_j(j=1,2,\cdots,5)$ 的建造费用的报价 (万元) 为 $c_{ij}(i,j=1,2,\cdots,5)$，
+ 如表 \ref{tab:assign}。该公司应对 5 家建筑公司怎样分配建筑任务，才能使总的建筑费用最少？
+ \begin{table}[h]
+  \caption{建筑费用报价表}\label{tab:assign}
+  \centering
+ % \begin{center}
+\begin{tabular}{C{1.2cm}|C{1.2cm}C{1.2cm}C{1.2cm}C{1.2cm}C{1.2cm}}
+\hlinewd{1pt}
+              &      $B_1$ &      $B_2$ &      $B_3$ &      $B_4$ &      $B_5$ \\
+\hline
+        $A_1$ &          4 &          8 &          7 &         15 &         12 \\
+%\hline
+        $A_2$ &          7 &          9 &         17 &         14 &         10 \\
+%\hline
+        $A_3$ &          6 &          9 &         12 &          8 &          7 \\
+%\hline
+        $A_4$ &          6 &          7 &         14 &          6 &         10 \\
+%\hline
+        $A_5$ &          6 &          9 &         12 &         10 &          6 \\
+\hlinewd{1pt}
+\end{tabular}
+%\end{center}
+ \end{table}
+  \end{exmp}
+
+\noindent{{\textbf  解：}这是一个标准的指派问题。\R 代码及运行结果如下:}
+\begin{Verbatim}
+> library(lpSolve)
+> x=matrix(c(4,7,6,6,6,8,9,9,7,9,7,17,12,14,12,
++            15,14,8,6,10,12,10,7,10,6),ncol=5)  ##指派问题的系数矩阵
+> lp.assign(x)
+ Success: the objective function is 34
+> lp.assign(x)$solution
+     [,1] [,2] [,3] [,4] [,5]
+[1,]    0    0    1    0    0
+[2,]    0    1    0    0    0
+[3,]    1    0    0    0    0
+[4,]    0    0    0    1    0
+[5,]    0    0    0    0    1
+\end{Verbatim}
+
+从运行结果可以看出，最优解已经成功找到。由 \verb|lp.assign(x)$solution| 得知，
+最优指派方案是：$A_1$ 承建 $B_3$，$A_2$ 承建 $B_2$，$A_3$ 承建 $B_1$，$A_4$ 承建 $B_4$，
+$A_5$ 承建 $B_5$。这样安排能使总费用最少，为 $7+9+6+6+6=34$ 万元。
+
+
+在实际应用中，常会遇到各种非标准形式的指派问题，有时不能直接调用函数，处理方法是将它们化为标准
+形式\citep{Op07}，然后再通过标准方法求解。
+
+
+同运输问题一样，LINGO 在解决指派问题时，也必须通过各种命令建立数据集、模型、目标函数、约束函数等，比较
+繁琐%\footnote{详见由 Wayne L. Winston 所著的《运筹学--应用范例与解法》第 442 页，第四版，清华大学出版。}
+，相比之下，\R 两三句代码就可以快速解决问题，较之 LINGO 软件，的确方便快捷了许多。

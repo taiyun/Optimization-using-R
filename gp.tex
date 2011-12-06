@@ -1,0 +1,174 @@
+ \section{目标规划}
+ \subsection{目标规划问题及其数学模型}
+ 目标规划\footnote{目标规划可分为线性和非线性两种，这里讨论的是比较简单的线性目标规划 
+(linear goal programming)。} (goal programming) 是运筹学中的一个重要分支，它是为解决多目标决策问题而发展起来
+ 的一种数学方法。目标规划可以按照确定的若干目标值及其实现的优先次序，在给定约束条件下寻找
+ 偏离目标值最小的解的数学方法。它在处理实际决策问题时，承认各项决策要求 (即使是冲突的) 
+ 的存在有合理性；在做最终决策时，不强调其绝对意义上的最优性。由于目标规划在一定程度上弥补了线性规划
+ 的局限性，因此，目标规划被认为是一种较之线性规划更接近于实际决策工程的工具。
+
+
+ 目标规划数学模型的一般形式为：
+ \begin{equation}\label{eq:gp}
+\begin{array}{ll}
+ \min P_l (\sum\limits_{k = 1}^K ({W_{lk}^- d_k^- + W_{lk}^ +  d_k^+  } ))&l=1,2,\ldots,L \\
+ \multicolumn{2}{l}{\text{s.t.}
+ \left\{ \begin{array}{ll}
+\sum\limits_{j = 1}^n {c_{kj}x_j+ d_k^- -d_k^+ }=g_k            &k = 1,2,\ldots,K \\
+\sum\limits_{j = 1}^n {a_{ij}x_j \leqslant(\text{或}=,\text{或}\geqslant) b_i}     &i = 1,2,\ldots,m \\
+ x_j  \geqslant 0&j = 1,2,\ldots,n \\
+ d_k^ - ,\ d_k^+ \geqslant 0                                   &k = 1,2,\ldots,K \\
+ \end{array} \right.}
+ \end{array}
+\end{equation}
+
+模型 (\ref{eq:gp}) 的约束条件中，第一行有偏差变量，为目标约束，第二行没有偏差变量，同线性规划里的约束条件一样，
+为绝对约束。可以证明，
+在模型 (\ref{eq:gp}) 有解的情况下，可以将其化为只含有目标约束的目标规划问题，方法是给所有的绝对约束赋予足够
+高级别的优先因子，从这个角度来看，线性规划为目标规划的特殊情况，而目标规划则为线性规划的自然推广。
+根据以上分析，可将模型 (\ref{eq:gp}) 简化并用矩阵和向量记为：
+\begin{equation}\label{eq:gp2}
+\begin{array}{ll}
+ \min \mathbf{P}(\mathbf{W}^- \mathbf{d}^- +\mathbf{W}^+ \mathbf{d}^+)\\
+ \text{s.t.}{\left\{ \begin{array}{l}
+ \mathbf{Ax}+ \mathbf{d}^- -\mathbf{d}^+=\mathbf{g}       \\
+ \mathbf{d}^- ,\ \mathbf{d}^+ \geqslant\mathbf{0}     \\
+ \mathbf{x} \geqslant \mathbf{0}                  \\
+ \end{array} \right.}
+ \end{array}
+\end{equation}
+
+模型 (\ref{eq:gp2}) 中，所有的约束都为目标约束，每一个目标约束都对应一对偏差变量。
+
+\subsection{用 \pkg{goalprog} 包求解目标规划}
+
+\R 中， \pkg{goalprog} 包\citep{goalprog08}可以求解形式为模型 (\ref{eq:gp2}) 的目标规划问题，
+核心函数为 \fun{llgp()}，用法如下：
+\begin{verbatim}
+llgp(coefficients, targets, achievements, maxiter = 1000, verbose = FALSE)
+\end{verbatim}
+
+参数中，\rcode{coefficients} 为约束变量 (不包括偏差变量) 的系数矩阵，即模型 (\ref{eq:gp2}) 中的矩阵 $\mathbf{A}$。
+\rcode{targets} 为系数矩阵对应的约束向量，即模型 (\ref{eq:gp2}) 中的向量 $\mathbf{g}$。
+\rcode{achievements} 为关于目标函数 (默认求最小值) 的数据框，是由 4 个向量构成：objective、priority、
+p 和 n。其中数据框的每一行对应一个软约束条件，objective 和 priority 为正整数，分别表示针对第几对偏差变量
+ (第 n 对偏差变量必须出现在第 n 个目标约束中) %%%%%%%%%变量 (次序和一致) 该目标约束对应的
+和该偏差变量的优先级别 ，p 和 n 分别表示 $d^+$(正偏差变量)、$d^-$(负偏差变量) 的权
+系数\footnote{p 和 n 分别为 positive (正的) 和 negative (负的) 的首字母，这与它们代表的偏差变量的正负是一致的。}。
+\rcode{maxiter} 为最大迭代次数，取正整数，默认为 1000。
+\rcode{verbose} 为逻辑变量 (取 \rcode{TRUE} 或 \rcode{FALSE} )，决定是否输出中间过程，默认不输出。
+\begin{exmp}
+(来自 \citep{Op07} 例题 4.2) 某工厂生产两种产品，受到原材料供应和设备工时的限制，在单位利润等有关数据已知的条件下，要求制定一个获利最大的
+生产计划，具体数据见表 \ref{tab:gp001}。
+
+
+ \begin{table}[ht]
+   \caption{生产约束、利润表}\label{tab:gp001}
+   \centering
+\begin{tabular}[h]{L{3cm}|C{2cm}|C{2cm}|C{2cm}}
+\hlinewd{1pt}
+        产品\centering &      A &          B &     限量  \\
+\hline
+        原材料 (kg/件) &      5 &         10 &       60\\
+%\hline
+        设备工时 (h/件)&      4 &           4&       40 \\
+%\hline
+        利润 (元/件)   &      6 &          8 &        \\
+\hlinewd{1pt}
+\end{tabular}
+ \end{table}
+ \end{exmp}
+
+在决策时，按重要程度的先后顺序，要考虑如下意见：
+\begin{enumerate}
+\item 原材料严重短缺，生产中应避免浪费，不得突破使用限额；
+\item 由于产品 B 销售疲软，故希望产品 B 的产量不超过产品 A 的一半；
+\item 最好能节约 4 h 的设备工时；
+\item 计划利润不少于 48 元。
+\end{enumerate}
+
+以上四条意见中，显然第一条为绝对约束，第二至四条为目标约束。
+请根据这些要求决定两种产品生产量。
+
+
+\noindent{{\textbf  解：}这是典型的多目标规划问题，建立目标规划模型如下：}
+
+\begin{equation*}
+\begin{array}{l}
+ \min \ \{P_1d_1^-,\ P_2d_2^+,\  P_3d_3^-\}\\
+ \text{s.t.}\left\{ \begin{array}{rrrrrrrrr}
+ 5x_1&+ & 10x_2 &  &        & &        &\leqslant& 60\\
+  x_1&- &   x_2 &+ &d_1^{-} &-& d_1^{+}&        =&  4\\
+ 4x_1&+ &  4x_2 &+ &d_2^{-} &-& d_2^{+}&        =& 56\\
+ 6x_1&+ &  8x_2 &+ &d_3^{-} &-& d_3^{+}&        =& 12\\
+ \multicolumn{9}{l}{x_1, \ x_2,\  d_{1-3}^-, \ d_{1-3}^{+}\ \geqslant0}
+ \end{array} \right.
+ \end{array}
+\end{equation*}
+
+该模型中含绝对约束条件，将绝对约束条件转化为一级目标约束条件，得到模型如下：
+\begin{equation*}
+\begin{array}{l}
+ \min \ \{P_1d_1^+,\ P_2d_1^-,\ P_3d_2^+,\  P_4d_3^-\}\\
+ \text{s.t.}\left\{ \begin{array}{rrrrrrrrr}
+ 5x_1&+ & 10x_2 & +&d_1^{-} &-& d_1^{+}&\leqslant& 60\\
+  x_1&- &   x_2 &+ &d_2^{-} &-& d_2^{+}&        =&  4\\
+ 4x_1&+ &  4x_2 &+ &d_3^{-} &-& d_3^{+}&        =& 56\\
+ 6x_1&+ &  8x_2 &+ &d_4^{-} &-& d_4^{+}&        =& 12\\
+ \multicolumn{9}{l}{x_1, \ x_2,\  d_{1-4}^-, \ d_{1-4}^{+}\ \geqslant0}
+ \end{array} \right.
+ \end{array}
+\end{equation*}
+
+该模型符合模型 (\ref{eq:gp2}) 的形式，可以直接调用 \fun{llgp()} 函数来求解该问题，
+注意：\R 中根据 \rcode{achievements} 数据框
+中的 priority 来判断绝对优先级别，不用再设置 $P_1$，$P_2$，$P_3$。\R 代码和部分输出结果如下：
+\begin{Verbatim}
+> library(goalprog)
+> coefficients=matrix(c(5,1,4,6,10,-2,4,8),4)
+> targets=c(60,0,36,48)
+> achievements=data.frame(objective=1:4,priority=c(1,2,3,4),
++                         p=c(1,0,1,0),n=c(0,1,0,1))
+> soln=llgp(coefficients, targets, achievements)
+> soln$converged
+[1] TRUE
+> soln$out
+
+Decision variables
+                X
+X1   4.800000e+00
+X2   2.400000e+00
+\end{Verbatim}
+
+观察输出结果，可以知道该问题已经得到最优解 (\verb|soln$converged| 为 \rcode{TRUE} 时，表示最优解已经找到)，
+此时 $x_1$，$x_2$ 分别取 4.8，2.4，即应生产 A 产品 4.8 个单位，B 产品 2.4 个单位。需要说明的是，由于约束较少，
+本题有四个满意解，这里仅仅得到一个。此外，
+程序结果输出较多，上面的 \verb|soln$out| 仅选取了一部分。
+下面再看一个稍微复杂的例子。
+\begin{exmp}
+求下列目标规划问题：
+ \begin{equation*}
+\begin{array}{l}
+ \min \ \{P_1(2d_1^+ + 3d_2^+),\ P_2d_3^-,\  P_3d_4^+\}\\
+ \text{s.t.}\left\{ \begin{array}{rrrrrrrrr}
+ x_1&+ & x_2 &+ &d_1^{-} &-& d_1^{+}&=& 10\\
+ x_1&  &     &+ &d_2^{-} &-& d_2^{+}&=& 4\\
+ 5x_1&+& 3x_2&+ &d_3^{-} &-& d_3^{+}&=& 56\\
+ x_1&+ & x_2 &+ &d_4^{-} &-& d_4^{+}&=&12\\
+ \multicolumn{9}{l}{x_1, \ x_2,\  d_{1-4}^-, \ d_{1-4}^{+}\ \geqslant 0}
+ \end{array} \right.
+ \end{array}
+\end{equation*}
+\end{exmp}
+
+\noindent{{\textbf  解：}这是一个多目标规划问题，可以直接调用 \fun{llgp()} 函数求解。
+\R 代码及运行结果如下 (为了便于展示，输出了一些参数的信息):}
+\VerbatimInput{./code/gp3.r}
+
+分析输出结果，可以知道该问题已经得到最优解，
+此时 $x_1$，$x_2$ 分别为 4，6。
+
+
+通过这两个例子，我们发现该函数在解决目标规划问题上非常简捷，只需要套用格式，将问题转化为
+函数需要的格式即可。而 LINGO 在求解目标规划时则比较笨拙，它需要将多目标转化为单目标，当
+目标函数比较复杂时，这一过程将会非常繁琐而又困难。
