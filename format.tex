@@ -1,0 +1,37 @@
+\newcommand{\email}[1]{\href{mailto:#1}{\normalfont\texttt{#1}}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\rcode}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{\textbf{\textsf{#1}}}
+\newcommand{\fun}[1]{\textit{#1}}
+
+\renewcommand{\figurename}{\heiti\small 图}
+\renewcommand{\tablename}{\heiti\small 表}
+
+\newtheorem{exmp}{例~}
+\geometry{left=3cm,right=3cm,top=2.5cm,bottom=2.5cm}
+\graphicspath{{fig/}}
+\RecustomVerbatimEnvironment{Verbatim}{Verbatim}{frame=leftline,numbers=left,
+	rulecolor=\color{lightgray},framerule=4pt,numbersep=3pt}
+\fvset{frame=leftline,numbers=left,rulecolor=\color{lightgray},framerule=4pt,
+	numbersep=3pt}
+
+
+\newcommand{\PreserveBackslash}[1]{\let\temp=\\#1\let\\=\temp}
+\newcolumntype{C}[1]{>{\PreserveBackslash\centering}p{#1}}
+\newcolumntype{R}[1]{>{\PreserveBackslash\raggedleft}p{#1}}
+\newcolumntype{L}[1]{>{\PreserveBackslash\raggedright}p{#1}}
+
+
+\makeatletter
+\def\hlinewd#1{%
+  \noalign{\ifnum0=`}\fi\hrule \@height #1 \futurelet
+   \reserved@a\@xhline}
+\makeatother
+
+
+\setlength\arraycolsep{2pt}
+\setlength{\belowcaptionskip}{3pt plus 1pt minus 2pt}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
