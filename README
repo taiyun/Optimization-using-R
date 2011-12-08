@@ -1,3 +1,8 @@
-This is a Chinese document about doing optimization using R.
+这是一份关于R做最优化问题的中文文档，源文档UTF-8编码，请用xelatex编译得到最终文档。
 
-Run "xelatex Optimization-using-R.tex" to get the pdf document.
+您可以在Dowloads那里下载到生成的PDF文档和包括所有源文件的压缩包。
+
+这份文档已经年久失修，但作者时间、能力有限，因此希望大家能对其内容进行修订、扩充(CC协议之下)，
+发挥自由软件的精神和Social Network的力量，以方便更多人更快地学习、使用。
+
+谢谢！！
